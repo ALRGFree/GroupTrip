@@ -25,7 +25,7 @@ import {
   compareAsc,
 } from 'date-fns';
 
-import { formatInTimeZone, toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
 /**
  * Format a date for display
@@ -90,7 +90,7 @@ export function toTimezone(date, timezone) {
   const d = typeof date === 'string' ? parseISO(date) : date;
   if (!isValid(d) || !timezone) return d;
   try {
-    return toZonedTime(d, timezone);
+    return utcToZonedTime(d, timezone);
   } catch (error) {
     console.error('Timezone conversion error:', error);
     return d;
@@ -106,7 +106,7 @@ export function toTimezone(date, timezone) {
 export function fromTimezone(date, timezone) {
   if (!isValid(date) || !timezone) return date;
   try {
-    return fromZonedTime(date, timezone);
+    return zonedTimeToUtc(date, timezone);
   } catch (error) {
     console.error('Timezone conversion error:', error);
     return date;
