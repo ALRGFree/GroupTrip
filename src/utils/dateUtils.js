@@ -364,6 +364,24 @@ export function fromDatetimeLocal(value) {
   return isValid(d) ? d : null;
 }
 
+// Re-export commonly used date-fns functions as named exports
+export {
+  parseISO,
+  isValid,
+  addDays,
+  addHours,
+  addMinutes,
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+  startOfDay,
+  endOfDay,
+  isSameDay,
+  isBefore,
+  isAfter,
+};
+
 export default {
   formatDate,
   formatTime,
@@ -387,19 +405,4 @@ export default {
   toDatetimeLocal,
   toDateInput,
   fromDatetimeLocal,
-  // Re-export commonly used date-fns functions
-  parseISO,
-  isValid,
-  addDays,
-  addHours,
-  addMinutes,
-  differenceInDays,
-  differenceInHours,
-  differenceInMinutes,
-  differenceInSeconds,
-  startOfDay,
-  endOfDay,
-  isSameDay,
-  isBefore,
-  isAfter,
 };
