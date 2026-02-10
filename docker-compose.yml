@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database (for production-like local development)
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: grouptrip
+      POSTGRES_PASSWORD: grouptrip_password
+      POSTGRES_DB: grouptrip
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grouptrip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://grouptrip:grouptrip_password@db:5432/grouptrip?schema=public
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+      PORT: 3001
+      NODE_ENV: production
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Frontend (for production build)
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

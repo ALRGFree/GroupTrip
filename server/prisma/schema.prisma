@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  avatar        String?
+  preferences   String   @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  createdGroups Group[]        @relation("GroupCreator")
+  memberships   GroupMember[]
+  notifications Notification[]
+  createdEvents Event[]        @relation("EventCreator")
+
+  @@map("users")
+}
+
+model Group {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  destination String?
+  inviteCode  String   @unique
+  coverImage  String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  createdBy   User          @relation("GroupCreator", fields: [createdById], references: [id])
+  createdById String
+  members     GroupMember[]
+  events      Event[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id           String   @id @default(uuid())
+  role         String   @default("member")
+  status       String   @default("confirmed")
+  travelStatus String   @default("planning")
+  joinedAt     DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String
+
+  // Travel details stored as JSON strings
+  flights        String @default("[]")
+  drives         String @default("[]")
+  accommodations String @default("[]")
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  category    String    @default("activity")
+  datetime    DateTime
+  endDatetime DateTime?
+  location    String?
+  address     String?
+  cost        Float?
+  currency    String    @default("USD")
+  notes       String?
+  isPublic    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  group       Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String
+  createdBy   User   @relation("EventCreator", fields: [createdById], references: [id])
+  createdById String
+
+  @@map("events")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  title     String
+  message   String
+  data      String   @default("{}")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("notifications")
+}
